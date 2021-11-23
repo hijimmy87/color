@@ -10,9 +10,23 @@
 
 <body class="d-flex h-100 flex-column justify-content-between">
     <div>
-        <nav class="navbar navebar-expand navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="#">Colorrr</a>
+        <nav class="navbar navbar-expand-md navbar-light bg-light">
+            <div class="container-md">
+                <a class="navbar-brand" href="/">Colorrr</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse flex-row-reverse" id="navbar">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">首頁</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/advanced">進階</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
         
@@ -41,32 +55,7 @@
                 </form>
             </div>
             
-            <div class="row mb-4" id="info">
-                <!-- <div class="col col-12 col-md-4">
-                    <h3>預覽圖</h3>
-                    <img class="w-100" id="imgPreview">
-                </div>
-                <div class="col col-12 col-md-8">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col">基本資訊</th>
-                                <th scope="col">數值</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row">原始寬高(像素)</th>
-                                <td id="w-h">0x0</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">資料數</th>
-                                <td id="size">0</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div> -->
-            </div>
+            <div class="row mb-4" id="info"></div>
             <div class="row mb-3" id="h"></div>
             <div class="row mb-3" id="s"></div>
             <div class="row mb-3" id="v"></div>
@@ -86,5 +75,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/advanced.js"></script>
 </body>
-
 </html>

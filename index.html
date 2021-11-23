@@ -11,9 +11,23 @@
 
 <body class="d-flex h-100 flex-column justify-content-between">
     <div>
-        <nav class="navbar navebar-expand navbar-light bg-light">
-            <div class="container">
-                <a class="navbar-brand" href="#">Colorrr</a>
+        <nav class="navbar navbar-expand-md navbar-light bg-light">
+            <div class="container-md">
+                <a class="navbar-brand" href="/">Colorrr</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse flex-row-reverse" id="navbar">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">首頁</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/advanced">進階</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
         
@@ -24,38 +38,12 @@
                     <input type="file" class="form-control" accept="image/*" onchange="loadImg(this)">
                 </div>
             </div>
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary mb-5" data-bs-toggle="modal" data-bs-target="#historyModal">
-                歷史紀錄
-            </button>
-            
-            <!-- Modal -->
-            <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            歷史紀錄
-                            <div id="history"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Save changes</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- <button class="btn btn-light" onclick="showHistroys()">History</button> -->
             <div class="row align-items-start">
                 <div class="col col-12 col-md-4">
                     <h3>預覽圖</h3>
                     <div class="w-100">
                         <canvas id="imgCanvas"></canvas>
                     </div>
-
                 </div>
                 <div class="col col-12 col-md-8">
                     <h3>平均值</h3>
@@ -129,5 +117,4 @@
     <script src="/js/color.js"></script>
     <script src="/js/main.js"></script>
 </body>
-
 </html>
