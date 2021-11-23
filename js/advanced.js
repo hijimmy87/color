@@ -6,13 +6,24 @@ function loadImg() {
     img.src = src;
     img.classList.add('w-100');
     img.onload = function() {
-        console.log(new Date().toTimeString() + "Started");
+        console.log(start);
         let cvs = $('<canvas></canvas>')[0],
             ctx = cvs.getContext('2d');
-        cvs.width  = parseInt($('#inputWidth' ).val()) || img.width;
-        cvs.height = parseInt($('#inputHeight').val()) || img.height * cvs.width / img.width;
-        $('#w-h').text(`${cvs.width}x${cvs.height}`);
-        $('#size').text(cvs.width * cvs.height);
+        // 固定比例
+        if ($('#ratio').prop('checked')) {
+            if (width = parseInt($('#inputWidth' ).val())) {
+                cvs.width = width;
+                cvs.height = img.height * width / img.width;
+            }
+            else {
+                cvs.height = parseInt($('#inputHeight').val()) || img.height;
+                cvs.width = img.width * cvs.height / img.height;
+            }
+        }
+        else {
+            cvs.width  = parseInt($('#inputWidth' ).val()) || img.width;
+            cvs.height = parseInt($('#inputHeight').val()) || img.height;
+        }
 
         ctx.drawImage(this, 0, 0, cvs.width, cvs.height);
         let data = ctx.getImageData(0, 0, cvs.width, cvs.height),
@@ -39,17 +50,18 @@ function loadImg() {
         append('#s', '飽和度(Saturation)(%)', s);
         append('#v', '明度(Value)(%)', v);
         end = new Date();
+        console.log(end);
         let delta = new Date(end - start);
         delta = `${delta.getUTCHours()} 時 ${delta.getUTCMinutes()} 分 ${delta.getUTCSeconds()}.${delta.getUTCMilliseconds()} 秒`;
         let $info = $('#info');
         $info.empty();
         $info.append($('<div class="col col-12 col-md-4"><h3>預覽圖</h3></div>').append(img));
-        $info.append(  `<div class="col col-12 col-md-8"><table class="table table-hover">\
-                        <thead><tr><th scope="col">基本資訊</th><th scope="col">數值</th></tr></thead>\
-                        <tbody>\
-                            <tr><th scope="row">原始寬高(像素)</th><td>${cvs.width}x${cvs.height}</td></tr>\
-                            <tr><th scope="row">資料數</th><td>${cvs.width * cvs.height}</td></tr>\
-                            <tr><th scope="row">總耗時</th><td>${delta}</td></tr>\
+        $info.append(  `<div class="col col-12 col-md-8"><table class="table table-hover">
+                        <thead><tr><th scope="col">基本資訊</th><th scope="col">數值</th></tr></thead>
+                        <tbody>
+                            <tr><th scope="row">原始寬高(像素)</th><td>${cvs.width}x${cvs.height}</td></tr>
+                            <tr><th scope="row">資料數</th><td>${cvs.width * cvs.height}</td></tr>
+                            <tr><th scope="row">總耗時</th><td>${delta}</td></tr>
                         </tbody>`);
     }
 }
@@ -63,31 +75,31 @@ function append(element, title, data) {
         else count[x] = {x:x,y:1};
     });
     //////////////////////////////////////////////////
-    let $table = $('<table class="table table-hover"></table>'),
-        $thead = $(`<thead><tr><th scope="col">${title}</th><th scope="col">數值</th></tr></thead>`),
-        $tbody = $('<tbody></tbody>');
-    $table.append($thead);
+    let $table = $(`<table class="table table-hover">
+                    <thead><tr><th scope="col">${title}</th><th scope="col">數值</th></tr></thead>
+                    <tbody></tbody>
+                    </table>`),
+        $tbody = $table.find('tbody');
     $table.append($tbody);
     let titles = ['最小值', '第一四分位數', '中位數', '第三四分位數', '最大值'];
     for (let i = 0; i < 5; i++) {
         let value = d3.quantile(data, 0.25 * i);
         $tbody.append(`<tr><th scope="row">${titles[i]}</th><td>${value}</td></tr>`);
     }
-    let mode = d3.mode(data),
+    let mode = d3.mode(data)
         mean = Math.round(d3.mean(data) * 100) / 100,
-        dev  = Math.round(d3.deviation(data) * 100) / 100;
-    $tbody.append(`<tr><th scope="row">眾數</th><td>${mode}</td></tr>\
-                   <tr><th scope="row">平均值</th><td>${mean}</td></tr>\
-                   <tr><th scope="row">標準差</th><td>${dev}</td></tr>`);
+        sd  = Math.round(d3.deviation(data) * 100) / 100;
+    $tbody.append(`<tr><th scope="row">眾數</th><td>${mode}</td></tr>
+                   <tr><th scope="row">平均值</th><td>${mean}</td></tr>
+                   <tr><th scope="row">標準差</th><td>${sd}</td></tr>`);
     $element.append($('<div class="col col-12 col-sm-6 col-md-4"></div>').html($table));
     //////////////////////////////////////////////////
-    const $chart = $('<div class="col col-12 col-sm-6 col-md-8"></div>'),
-          cvs = $('<canvas></canvas>')[0];
+    const $chart = $('<div class="col col-12 col-sm-6 col-md-8"><canvas></canvas></div>'),
+          cvs = $chart.children()[0];
+    $element.append($chart);
     cvs.width  = $chart.width();
     cvs.height = $chart.height();
-    $chart.html(cvs);
-    $element.append($chart);
-    new Chart(cvs,{
+    new Chart(cvs, {
         type: 'scatter',
         data: {
             datasets: [{
