@@ -16,18 +16,12 @@ function loadImg(file) {
             rgb[1] += pixels[i+1];
             rgb[2] += pixels[i+2];
         }
-        rgb = rgb.map(x => Math.round(x / (pixels.length / 4)));
-        let hex  = colorConvert.rgb2hex(...rgb),
-            cmy  = colorConvert.rgb2cmy(...rgb),
-            cmyk = colorConvert.rgb2cmyk(...rgb),
-            hsv  = colorConvert.rgb2hsv(...rgb),
-            hsl  = colorConvert.rgb2hsl(...rgb);
-        $('#hex' ).text('#' + hex);
-        $('#rgb' ).text(`(${rgb.join(', ')})`);
-        $('#cmy' ).text(`(${cmy.join('%, ')}%)`);
-        $('#cmyk').text(`(${cmyk.join('%, ')}%)`);
-        $('#hsv' ).text(`(${hsv[0]}°, ${hsv[1]}%, ${hsv[2]}%)`);
-        $('#hsl' ).text(`(${hsl[0]}°, ${hsl[1]}%, ${hsl[2]}%)`);
-        $('#color').css('background-color', '#' + hex);
+        let color = new Color('sRGB', rgb.map(x => x / (pixels.length / 4) / 255.0));
+        let $table = $('#colorTable tbody');
+        $table.append(`<tr><th scope="row">HEX</th><td>${color.hex.toUpperCase()}</td></tr>`);
+        for (let space of Object.keys(Color.spaces)) {
+            $table.append(`<tr><th scope="row">${space}</th><td>${color.to(space)}</td></tr>`);
+        }
+        $('#color').css('background-color', color.hex);
     }
 }

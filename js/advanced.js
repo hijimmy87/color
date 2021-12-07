@@ -1,99 +1,152 @@
-function loadImg() {
-    let start = new Date(), end;
-    let img = new Image(),
-        file = $('#inputImg')[0].files[0],
-        src = URL.createObjectURL(file);
-    img.src = src;
-    img.classList.add('w-100');
+/**
+ * submit handler
+ */
+$(() => {
+    $('form').submit(() => { 
+        try {
+            $('#submit').text('處理中...')
+                        .removeClass('btn-primary')
+                        .addClass('btn-secondary')
+                        .attr('disabled', true);
+            setTimeout(process, 100);
+        } catch (error) {
+            alert(`Some Error happened. Please try again.\n\n ${error}`);
+        }
+    });
+});
+/**
+ * Processes the image.
+ */
+function process() {
+    let img = $('<img class="w-100">')[0],
+        file = $('#img')[0].files[0];
+    img.src = URL.createObjectURL(file);
+    let email = $('#email').val();
     img.onload = function() {
+        // timer
+        let start = new Date(), end;
         console.log(start);
-        let cvs = $('<canvas></canvas>')[0],
+        let cvs = $('<canvas>')[0],
             ctx = cvs.getContext('2d');
-        // 固定比例
+        // image ratio
         if ($('#ratio').prop('checked')) {
-            if (width = parseInt($('#inputWidth' ).val())) {
+            if (width = parseInt($('#width').val())) {
                 cvs.width = width;
                 cvs.height = img.height * width / img.width;
             }
             else {
-                cvs.height = parseInt($('#inputHeight').val()) || img.height;
+                cvs.height = parseInt($('#height').val()) || img.height;
                 cvs.width = img.width * cvs.height / img.height;
             }
         }
         else {
-            cvs.width  = parseInt($('#inputWidth' ).val()) || img.width;
-            cvs.height = parseInt($('#inputHeight').val()) || img.height;
+            cvs.width  = parseInt($('#width' ).val()) || img.width;
+            cvs.height = parseInt($('#height').val()) || img.height;
         }
 
+        // gets image pixels data
         ctx.drawImage(this, 0, 0, cvs.width, cvs.height);
-        let data = ctx.getImageData(0, 0, cvs.width, cvs.height),
-            pixels = data.data;
-        let h = [], s = [], v = [];
-        for (let i = 0; i < pixels.length; i += 4) {
-            let rgb = [pixels[i],pixels[i+1],pixels[i+2]],
-                max = Math.max(...rgb),
-                min = Math.min(...rgb);
-            if (max == min) h.push(0);
-            else {
-                [0,1,2].forEach(i => {if (max == rgb[i]) {
-                    let tmpH = 100 * (rgb[i>1 ? i-2 : i+1] - rgb[i>0 ? i-1 : i+2]) / (max - min) + 2 * i;
-                    tmpH = Math.round(tmpH * 100) / 100;
-                    if (tmpH < 0) tmpH += 360;
-                    if (tmpH >= 360) tmpH -= 360;
-                    h.push(tmpH);
-                }});
+        let data = ctx.getImageData(0, 0, cvs.width, cvs.height).data;
+        let imgSpace = $('#imgSpace').val();
+            space = $('#space').val();
+        let coords = [];
+        for (let i = 0; i < data.length; i += 4) {
+            let color = new Color(imgSpace, Array.from(data.slice(i, i + 3)).map(x =>x / 255)),
+                coord = color.to(space).coords.map(x => Math.round(x * 100) / 100);
+            for (let j = 0; j < coord.length; j++) {
+                coord[j] ||= 0;
+                if (!i) coords.push([coord[j]]);
+                else    coords[j].push(coord[j]);
             }
-            s.push(Math.round(max == 0 ? 0 : 10000 - 10000 * min / max) / 100);
-            v.push(Math.round(max * 2000 / 51) / 100);
         }
-        append('#h', '色相(Hue)(°)', h);
-        append('#s', '飽和度(Saturation)(%)', s);
-        append('#v', '明度(Value)(%)', v);
+        let titles = Object.keys(Color.space(space).coords);
+        $('main').empty();
+        let $main = $('main'),
+            $info = $('<div class="row mb-3">');
+        
+        $main.html('<h3>預覽</h3>');
+        $main.append($info);
+        $main.append('<button class="btn btn-primary mb-5" type="button" onclick="location.reload()">重新提交</button>')
+        $main.append('<h3>詳細數據</h3>');
+        for (let i = 0; i < titles.length; i++)
+            $main.append(detail(titles[i], coords[i]));
+        // timer
         end = new Date();
         console.log(end);
         let delta = new Date(end - start);
         delta = `${delta.getUTCHours()} 時 ${delta.getUTCMinutes()} 分 ${delta.getUTCSeconds()}.${delta.getUTCMilliseconds()} 秒`;
-        let $info = $('#info');
-        $info.empty();
-        $info.append($('<div class="col col-12 col-md-4"><h3>預覽圖</h3></div>').append(img));
+        $info.append($('<div class="col col-12 col-md-4"></div>').append(img));
         $info.append(  `<div class="col col-12 col-md-8"><table class="table table-hover">
                         <thead><tr><th scope="col">基本資訊</th><th scope="col">數值</th></tr></thead>
                         <tbody>
-                            <tr><th scope="row">原始寬高(像素)</th><td>${cvs.width}x${cvs.height}</td></tr>
+                        <tr><th scope="row">圖片名稱</th><td>${file.name}</td></tr>
+                            <tr><th scope="row">解析度</th><td>${cvs.width}x${cvs.height}</td></tr>
                             <tr><th scope="row">資料數</th><td>${cvs.width * cvs.height}</td></tr>
-                            <tr><th scope="row">總耗時</th><td>${delta}</td></tr>
-                        </tbody>`);
+                            <tr><th scope="row">圖片色域</th><td>${Color.space(imgSpace).name}</td></tr>
+                            <tr><th scope="row">分析使用</th><td>${Color.space(space).name}</td></tr>
+                            <tr><th scope="row">耗時</th><td>${delta}</td></tr>
+                        </tbody></table></div>`);
+        if (email)
+            alert(`你剛剛輸入了電子郵件信箱\n${email}\n\n\n\n貼心提醒\n請不要在來路不明的網站中輸入個人資訊，如電子郵件\nHiJimmy 關心您`);
     }
 }
-function append(element, title, data) {
-    const $element = $(element);
-    $element.empty();
-    let count = {};
-    data.sort();
-    data.forEach(x => {
-        if (count[x]) count[x].y++;
-        else count[x] = {x:x,y:1};
-    });
-    //////////////////////////////////////////////////
+/**
+ * Quantile 
+ */
+function quantile(array, p) {
+    let len = array.length;
+    if (len == 0) return array[0];
+    let n;
+    if (p == 0) return array[0];
+    if (p == 4) return array[len - 1];
+    if ((n = len * 0.25 * p) % 1 == 0) {
+        return ((array[n - 1] + array[n]) / 2);
+    }
+    return array[Math.floor(n)];
+}
+
+/**
+ * Creates the table and the chart
+ */
+function detail(title, data) {
+    const $element = $('<div class="row mb-3">');
+    let count = {},
+        maxCount = 0,
+        modes = [];
+    data.sort((a,b) => a - b);
+    // Finds Modes
+    for (let value of data) {
+        if (count[value]) count[value].y++;
+        else count[value] = {x: value, y: 1};
+        if (count[value].y > maxCount) {
+            maxCount = count[value].y;
+            modes = [value];
+        }
+        else if (count[value].y == maxCount) {
+            modes.push(value);
+        }
+    }
+
+    // Table
     let $table = $(`<table class="table table-hover">
                     <thead><tr><th scope="col">${title}</th><th scope="col">數值</th></tr></thead>
                     <tbody></tbody>
                     </table>`),
         $tbody = $table.find('tbody');
-    $table.append($tbody);
     let titles = ['最小值', '第一四分位數', '中位數', '第三四分位數', '最大值'];
+    let len = data.length;
     for (let i = 0; i < 5; i++) {
-        let value = d3.quantile(data, 0.25 * i);
+        let value = quantile(data, i);
         $tbody.append(`<tr><th scope="row">${titles[i]}</th><td>${value}</td></tr>`);
     }
-    let mode = d3.mode(data)
-        mean = Math.round(d3.mean(data) * 100) / 100,
-        sd  = Math.round(d3.deviation(data) * 100) / 100;
-    $tbody.append(`<tr><th scope="row">眾數</th><td>${mode}</td></tr>
-                   <tr><th scope="row">平均值</th><td>${mean}</td></tr>
-                   <tr><th scope="row">標準差</th><td>${sd}</td></tr>`);
+    modes.forEach(mode => $tbody.append(`<tr><th scope="row">眾數</th><td>${mode}</td></tr>`));
+    let mean = Math.round(data.reduce((acc, cur) => acc += cur) / len * 100) / 100,
+        sd   = Math.round(Math.sqrt(data.reduce((acc, cur) => acc += Math.pow(cur - mean, 2)) / len * 100)) / 100;
+    $tbody.append( `<tr><th scope="row">平均值</th><td>${mean}</td></tr>
+                    <tr><th scope="row">標準差</th><td>${sd}</td></tr>`);
     $element.append($('<div class="col col-12 col-sm-6 col-md-4"></div>').html($table));
-    //////////////////////////////////////////////////
+
+    // Chart
     const $chart = $('<div class="col col-12 col-sm-6 col-md-8"><canvas></canvas></div>'),
           cvs = $chart.children()[0];
     $element.append($chart);
@@ -126,4 +179,5 @@ function append(element, title, data) {
             }
         }
     });
+    return $element;
 }
