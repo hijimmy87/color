@@ -29,8 +29,7 @@ function process() {
         // timer
         let start = new Date(), end;
         console.log(start);
-        let cvs = $('<canvas class="w-100">')[0],
-            ctx = cvs.getContext('2d');
+        let cvs = $('<canvas class="w-100">')[0];
         // image ratio
         if ($('#ratio').prop('checked')) {
             if (width = parseInt($('#width').val())) {
@@ -56,7 +55,7 @@ function process() {
         cv.imshow(cvs, src);
         src.delete();
         // Pixels Info
-        let data = ctx.getImageData(0, 0, cvs.width, cvs.height).data;
+        let data = cvs.getContext('2d').getImageData(0, 0, cvs.width, cvs.height).data;
         let imgSpace = $('#imgSpace').val();
             space = $('#space').val();
         let coords = [];
