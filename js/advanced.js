@@ -1,9 +1,5 @@
-onOpenCvReady = () => {
-    $('#loadingOpenCV').remove();
-};
-
 /**
- * submit handler
+ * Submit handler
  */
 $(() => {
     $('form').submit(() => { 
@@ -14,7 +10,7 @@ $(() => {
                         .attr('disabled', true);
             setTimeout(process, 100);
         } catch (error) {
-            alert(`Some Error happened. Please try again.\n\n ${error}`);
+            alert(`Some errors happened. Please try again.\n\n ${error}`);
         }
     });
 });
@@ -72,7 +68,6 @@ function process() {
         //
         let outlierPercent = $('#outlier').val();
         let titles = Object.keys(Color.space(space).coords);
-        let email = $('#email').val();
         $('main').empty();
         let $main = $('main'),
             $info = $('<div class="row mb-3">');
@@ -98,8 +93,6 @@ function process() {
                             <tr><th scope="row">分析使用</th><td>${Color.space(space).name}</td></tr>
                             <tr><th scope="row">耗時</th><td>${delta}</td></tr>
                         </tbody></table></div>`);
-        if (email)
-            alert(`你剛剛輸入了電子郵件信箱\n${email}\n\n\n\n貼心提醒\n請不要在來路不明的網站中輸入個人資訊，如電子郵件\nHiJimmy 關心您`);
     }
 }
 /**

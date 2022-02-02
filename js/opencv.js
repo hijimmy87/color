@@ -1,11 +1,11 @@
-
-
-var before, after;
 /**
  * Submit handler
  */
 $(() => {
-    $('form').submit(() => {
+    $('#openCV').on('load',() => {
+        $('#loadingOpenCV').remove();
+    });
+    $('form').submit(() => { 
         try {
             $('#submit').text('處理中...')
                         .removeClass('btn-primary')
@@ -53,30 +53,31 @@ function process(imgSelector, title) {
         }
 
         let src  = cv.imread(img),
-            mask = new cv.Mat();
-        cv.cvtColor(src, src, cv.COLOR_RGBA2RGB);
+            dst  = new cv.Mat();
         cv.medianBlur(src, src, 9);
-        
-        cv.cvtColor(src, mask, cv.COLOR_RGB2GRAY);
-        cv.threshold(mask, mask, 235, 255, cv.THRESH_BINARY);
-        cv.cvtColor(mask, mask, cv.COLOR_GRAY2RGB);
+        cv.threshold(src, dst, 200, 255, cv.THRESH_TRUNC);
 
-        cv.bitwise_or(mask, src, src);
-        cv.imshow(cvs, src);
+        cv.imshow(cvs, dst);
+        src.delete();
 
         $('#submit').text('重新提交')
             .removeClass('btn-secondary')
             .addClass('btn-primary')
             .attr('disabled', false);
 
-        cv.cvtColor(mask, mask, cv.COLOR_RGB2GRAY);
-        cv.bitwise_not(mask, mask);
-        count = cv.countNonZero(mask);
-        rgb = cv.mean(src).slice(1, 3);
-        console.log(rgb);
-        let color = new Color('srgb', rgb).to('hsv');
-        coord = color.coords.map(x => Math.round(x * 100) / 100);
-        console.log(color.toString());
+        let data = cvs.getContext('2d').getImageData(0, 0, cvs.width, cvs.height).data;
+        let R = 0, G = 0, B = 0;
+        let counter = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            let rgb = Array.from(data.slice(i, i + 3))
+            if (rgb[0]==200&&rgb[1]==200&&rgb[2]==200) continue
+            counter++;
+            R += rgb[0];
+            G += rgb[1];
+            B += rgb[2];
+        }
+        let avg = [R, G, B].map(x => x / counter),
+            color = new Color('hsv', avg).to('HSV');
 
         let url = cvs.toDataURL('image/jpg');
 
@@ -91,9 +92,9 @@ function process(imgSelector, title) {
                             <tr><th scope="row">檔案名稱</th><td>${file.name}</td></tr>
                             <tr><th scope="row">解析度</th><td>${img.width}x${img.height}</td></tr>
                             <tr><th scope="row">樣本數</th><td>${img.width * img.height}</td></tr>
-                            <tr><th scope="row">污漬數量</th><td>${count}</td></tr>
-                            <tr><th scope="row">資料數</th><td>${count / (img.width * img.height) * 100} %</td></tr>
-                            <tr><th scope="row">污漬顏色(平均)</th><td>hsv(${coord[0]}°, ${coord[1]}%, ${coord[2]}%)</td></tr>
+                            <tr><th scope="row">污漬數量</th><td>${counter}</td></tr>
+                            <tr><th scope="row">資料數</th><td>${counter / (img.width * img.height) * 100} %</td></tr>
+                            <tr><th scope="row">污漬顏色(平均)</th><td>${color.toString()}</td></tr>
                             <tr><th scope="row">下載</th><td><a download=${file.name} href="${url}">下載</a></td></tr>
                         </tbody></table></div>`);
     }
